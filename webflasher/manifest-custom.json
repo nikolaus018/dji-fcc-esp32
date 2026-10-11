@@ -1,0 +1,15 @@
+{
+  "name": "DJI FCC patcher (custom PCB)",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [
+        {
+          "path": "firmware/custom.bin",
+          "offset": 0
+        }
+      ]
+    }
+  ]
+}

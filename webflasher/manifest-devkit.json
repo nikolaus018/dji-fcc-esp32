@@ -1,0 +1,15 @@
+{
+  "name": "DJI FCC patcher (dev board)",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [
+        {
+          "path": "firmware/devkit.bin",
+          "offset": 0
+        }
+      ]
+    }
+  ]
+}
