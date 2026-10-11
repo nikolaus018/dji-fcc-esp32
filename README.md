@@ -21,3 +21,6 @@ FCC power is only legal in the US; power cycle the drone and remote to return to
   non-periodic TX FIFO for it. Both are required.
 - The CDC serial function is interface 2; interfaces 0/1 are DJI-proprietary.
 - The LED code drives GPIO48 and GPIO38 (DevKitC-1 v1.0 / v1.1).
+
+## License
+MIT for this project's own code (see `LICENSE`). `components/espressif__usb` is Apache-2.0 (Espressif), see its own `LICENSE`.
