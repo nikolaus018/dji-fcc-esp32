@@ -1,0 +1,5 @@
+dependencies:
+  usb_host_cdc_acm: "^2.3"
+  espressif/led_strip: "^3.0"
+  espressif/usb:
+    override_path: "../components/espressif__usb"
