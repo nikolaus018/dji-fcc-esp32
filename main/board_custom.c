@@ -17,6 +17,9 @@
 #define PIN_BOOST_EN   6    // MT3608 EN
 #define PIN_LOAD_EN    7    // TPS2553 EN
 #define PIN_LOAD_FAULT 8    // TPS2553 /FAULT, external 100k pull-up
+#define PIN_VCHG_SENSE 21   // J2 VBUS via 100k/150k divider (RTC GPIO); also the USB switch select
+#define PIN_CHRG       39   // TP4056 /CHRG  (open drain, low = charging)
+#define PIN_STDBY      38   // TP4056 /STDBY (open drain, low = done)
 #define PIN_LED_R      42   // LED cathodes: anodes sit on VBAT, GPIO low = on
 #define PIN_LED_G      41
 #define PIN_LED_B      40
@@ -57,7 +60,9 @@ void board_init(void)
     gpio_set_level(PIN_BOOST_EN, 0);
     gpio_set_level(PIN_LOAD_EN, 0);
     board_led(0, 0, 0);
-    gpio_config(&(gpio_config_t){.pin_bit_mask = BIT64(PIN_LOAD_FAULT), .mode = GPIO_MODE_INPUT});
+    gpio_config(&(gpio_config_t){.pin_bit_mask = BIT64(PIN_LOAD_FAULT) | BIT64(PIN_VCHG_SENSE), .mode = GPIO_MODE_INPUT});
+    gpio_config(&(gpio_config_t){.pin_bit_mask = BIT64(PIN_CHRG) | BIT64(PIN_STDBY), .mode = GPIO_MODE_INPUT,
+                                 .pull_up_en = GPIO_PULLUP_ENABLE});
 
     adc_oneshot_unit_init_cfg_t unit = {.unit_id = ADC_UNIT_1};
     ESP_ERROR_CHECK(adc_oneshot_new_unit(&unit, &adc));
@@ -111,6 +116,19 @@ bool board_remote_fault(void)
     return gpio_get_level(PIN_LOAD_FAULT) == 0;
 }
 
+bool board_charger_present(void)
+{
+    return gpio_get_level(PIN_VCHG_SENSE) == 1;
+}
+
+int board_charge_state(void)
+{
+    if (gpio_get_level(PIN_CHRG) == 0) {
+        return 1;
+    }
+    return gpio_get_level(PIN_STDBY) == 0 ? 2 : 0;
+}
+
 void board_wait_remote_detach(void)
 {
     int gone = 0;
@@ -127,6 +145,8 @@ void board_sleep(void)
     ESP_LOGI(TAG, "deep sleep, waking when a remote is plugged in");
     // Both CC pins idle high (33k pull-up); the remote's 5.1k Rd pulls one of them low.
     esp_sleep_enable_ext1_wakeup_io(BIT64(PIN_CC1) | BIT64(PIN_CC2), ESP_EXT1_WAKEUP_ANY_LOW);
+    // Plugging J2 into a charger/computer also wakes us (VBUS high) so USB flashing works from sleep.
+    esp_sleep_enable_ext0_wakeup(PIN_VCHG_SENSE, 1);
     esp_deep_sleep_start();
 }
 #endif

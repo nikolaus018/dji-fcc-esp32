@@ -12,6 +12,8 @@ bool board_wait_remote_attach(int timeout_ms);       // true once a USB-C sink (
 void board_remote_power(bool on);                    // 5 V to the remote's port (current limited on the PCB)
 bool board_remote_fault(void);                       // switch reports over-current / reverse voltage
 void board_wait_remote_detach(void);                 // returns once the remote has been unplugged
+bool board_charger_present(void);                    // J2 has VBUS (charger or computer); USB is routed to J2 then
+int board_charge_state(void);                        // 0 none, 1 charging, 2 charge complete
 void board_sleep(void) __attribute__((noreturn));    // deep sleep, wakes when a remote is plugged in
 
 #define BOARD_HAS_POWER_MGMT CONFIG_DJI_BOARD_CUSTOM

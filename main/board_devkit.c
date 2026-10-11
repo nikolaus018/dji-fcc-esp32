@@ -35,6 +35,8 @@ bool board_wait_remote_attach(int timeout_ms) { (void)timeout_ms; return true; }
 void board_remote_power(bool on) { (void)on; }   // the dev board feeds VBUS through the USB-OTG jumper
 bool board_remote_fault(void) { return false; }
 void board_wait_remote_detach(void) {}
+bool board_charger_present(void) { return false; }
+int board_charge_state(void) { return 0; }
 
 void board_sleep(void)
 {

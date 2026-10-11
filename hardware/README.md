@@ -13,16 +13,16 @@ See [Before you call it production](#before-you-call-it-production).
 ## What it does
 
 ```
- J2 USB-C (charge only)        J1 USB-C (to the remote's bottom port)
-   │ 5 V                          ▲ 5 V, ~540 mA limit      D+/D-/CC
+ J2 USB-C (charge + flash)     J1 USB-C (to the remote's bottom port)
+   │ 5 V, D+/D-                   ▲ 5 V, ~540 mA limit      D+/D-/CC
    ▼                              │                          │
  TP4056 charger ──► VBAT ──► MT3608 boost ──► TPS2553 switch ─┤
  (255 mA)            │  ▲        (5.0 V)        (EN from ESP)  │
                      │  └── DW01A + FS8205A protection        │
                      ▼                                        ▼
-                  AP2112K 3.3 V ──► ESP32-S3-MINI-1-N8 ◄── USBLC6 ESD
-                                      │ ADC: CC1/CC2 (attach), VBAT
-                                      └ RGB status LED, UART pads
+                  AP2112K 3.3 V ──► ESP32-S3-MINI-1-N8 ◄─ FSUSB42 ◄─ USBLC6 ESD (J1)
+                                      │ ADC: CC1/CC2 (attach), VBAT   ▲   (select = J2 has VBUS)
+                                      └ RGB status LED, UART pads     └─ USBLC6 ESD (J2)
 ```
 
 Behaviour (firmware `main/`, built with `CONFIG_DJI_BOARD_CUSTOM`):
@@ -34,7 +34,7 @@ Behaviour (firmware `main/`, built with `CONFIG_DJI_BOARD_CUSTOM`):
 5. Port power off, wait for unplug, deep sleep. Repeat the plug-in after every power-on of the drone/remote.
 
 LED colours: blue = powering remote, yellow = sending, green = patched, red = error / low battery.
-Two small LEDs near J2: red = charging, green = charge complete.
+While J2 is powered the same RGB LED shows charging (red) / full (green) / powered but not charging (dim blue).
 
 ## Files
 
@@ -62,7 +62,7 @@ unless you stop using the generators.
 
 ## Board
 
-* 76 × 34 mm, 1.6 mm, 2-layer, all parts on top (single-sided SMT assembly), 2 mm corner radius.
+* 80 × 34 mm, 1.6 mm, 2-layer, all parts on top (single-sided SMT assembly), 2 mm corner radius.
 * Net classes: power 0.6 mm (routed down to 0.4–0.45 mm at pads), signals 0.2 mm, ≥ 0.1 mm minimum, vias 0.6/0.3 (0.8/0.4 power).
 * Ground pour on both layers with stitching vias; DRC: 0 errors, 0 unconnected. Schematic parity checked.
 * Antenna keepout of the ESP module sits at the top edge (the radio is unused, but nothing is placed there).
@@ -72,17 +72,16 @@ unless you stop using the generators.
 | Item | Position (mm, origin top-left, +y down) |
 |---|---|
 | J1 USB-C (to remote) | mouth flush with left edge, centre y = 17, shell 8.94 wide × 3.3 high |
-| J2 USB-C (charge) | mouth flush with right edge, centre y = 17 |
-| Status LEDs R/G/B | (63, 2.2), (67, 2.2), (71, 2.2): light-pipe window in the top-right corner |
-| Charge LEDs | (51, 24) red, (51, 26.5) green (can be left covered) |
-| Mounting holes | 2 × Ø2.2 (M2) at (3, 31) and (73, 31) |
+| J2 USB-C (charge + flash) | mouth flush with right edge, centre y = 17 |
+| Status LEDs R/G/B | (67, 2.2), (71, 2.2), (75, 2.2): light-pipe window in the top-right corner |
+| Mounting holes | 2 × Ø2.2 (M2) at (3, 31) and (77, 31) |
 | Battery | JST-PH 2 mm at (36, 27.4); a 502040 pouch (≈ 5 × 20 × 40 mm, 400-500 mAh) fits under the board |
 | Programming/test pads | bottom edge x = 42.5 … 53, y = 32.7 (EN, IO0, TX, RX, 3V3); GND/VBAT/VBUS pads top-left |
 | Tallest parts | JST connector 5.5 mm, USB-C 3.3 mm, module 2.4 mm, inductor 2.0 mm |
 
 `fab/dji-fcc.step` contains the board and component models for fitting a case. Keep metal away from the top edge
-(antenna end of the module). Both USB-C ports are exposed in the default layout; a case that only exposes J1
-is possible if J2 is reached through a cover or only used at the factory.
+(antenna end of the module). Both USB-C ports are exposed in the default layout. J2 is needed for charging and updates, so a case that hides it needs a cover or
+a charge/update door; J1 is the one used every flight.
 
 ## Ordering (JLCPCB)
 
@@ -100,15 +99,20 @@ every line resolved to a matching part except L1 (C48427 was only seen on LCSC's
 The DW01A pin order (OD, CS, OC, TD, VCC, GND) is the standard one but I could not open the vendor datasheet
 for C2927799; compare it with the datasheet before ordering.
 
-## Flashing
+## Flashing and updates
 
-No USB data path to J2 (the S3 has one USB PHY and it belongs to J1). Program through the pads (UART0):
+**Over J2 (USB-C), no adapter needed.** The ESP32-S3 has one USB port. A small switch (FSUSB42) connects it to J2 whenever J2 has
+5 V on it (a computer or charger plugged in) and to J1 otherwise. Plug J2 into a computer:
 
-1. Disconnect the battery. Clip a 3.3 V USB-UART adapter to **TX, RX, GND** and supply 3.3 V from the adapter to the 3V3 pad.
-2. Short **IO0** to GND, tap **EN** to GND, release EN, then release IO0 after "waiting for download".
-3. `idf.py -B build_custom ... flash` (see the firmware README section).
+1. The board wakes (VBUS on J2 is a wake source), sees the charger and stays out of USB host mode. The RGB LED shows charge state.
+2. The ESP's built-in USB-Serial-JTAG shows up as a serial port (VID 303A, PID 1001).
+3. `idf.py -B build_custom ... -p <port> flash`. esptool resets into the ROM bootloader by itself (no buttons).
 
-Do not power from the 3V3 pad while the battery is connected.
+If the firmware is ever broken so badly that step 2 does not work, short the **IO0** pad to GND while plugging J2 in: the ROM
+bootloader takes over USB. The UART pads (TX, RX, GND, 3V3, EN, IO0) remain as a last resort and for production jigs.
+Do not power the 3V3 pad while the battery is connected.
+
+Charge mode keeps the ESP awake while J2 is powered (about 30 mA from the battery side, far below the 255 mA charge current).
 
 ## Design notes
 
@@ -121,8 +125,10 @@ Do not power from the 3V3 pad while the battery is connected.
 * **LDO:** AP2112K-3.3 directly from VBAT. Below ≈ 3.55 V the rail sags (dropout), the firmware refuses to start the remote below 3.3 V.
 * **Sleep current:** AP2112K 55 µA + S3 deep sleep ~7 µA + DW01A ~3 µA + dividers ~17 µA ≈ 85 µA → months of standby on 500 mAh.
 * **Status LEDs** sit between VBAT and the GPIOs (sinking, GPIO low = on) so the blue LED still has headroom at 3.3 V.
-* **Pins used:** IO1/IO2 CC1/CC2 (ADC1, wake), IO4 VBAT sense (ADC1), IO6 boost EN, IO7 switch EN, IO8 /FAULT, IO38 charger-VBUS sense,
-  IO40/41/42 LED B/G/R, IO19/IO20 USB, TXD0/RXD0 UART pads, IO0/EN pads.
+* **USB data path:** FSUSB42 (VCC 3.3 V, OE tied low, SEL = J2-VBUS divider output). SEL low → J1 (remote), SEL high → J2 (computer).
+  Each connector has its own USBLC6 ESD array.
+* **Pins used:** IO1/IO2 CC1/CC2 (ADC1, wake), IO4 VBAT sense (ADC1), IO6 boost EN, IO7 switch EN, IO8 /FAULT, IO21 J2-VBUS sense (wake),
+  IO38 /STDBY, IO39 /CHRG (internal pull-ups), IO40/41/42 LED B/G/R, IO19/IO20 USB, TXD0/RXD0 UART pads, IO0/EN pads.
 
 ## Before you call it production
 
@@ -130,7 +136,9 @@ This is a prototype-ready design, not a production release. Open items, roughly 
 
 1. **Build 5 boards and bring them up.** Checklist:
    - Visual / continuity: no shorts VBAT-GND, 3V3-GND, VBUS_REM-GND with the battery out.
-   - Charge port: 5 V in → red LED, TP4056 BAT ≈ 4.2 V at end of charge, 255 mA max.
+   - Charge port: 5 V in → RGB LED red while charging, green when full, TP4056 BAT ≈ 4.2 V at end of charge, 255 mA max.
+   - **USB switch:** with J2 on a computer the ESP enumerates as 303A:1001 and flashes; with only J1 plugged into a remote it enumerates the remote.
+     Check both directions, also with both cables attached (J2 wins).
    - Protection: battery connected, measure VBAT at J3 vs. 3V3 pad; short-circuit test on a bench supply with current limit.
    - Boost: VBOOST = 5.0 V ± 3 % with 100 Ω load, ripple < 100 mV; `BOOST_EN` low → switch output < 0.1 V.
    - Switch: VBUS_REM = 0 V when idle, 5 V when enabled, trips at ≈ 0.5-0.6 A.

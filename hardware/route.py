@@ -10,7 +10,7 @@ from pcbnew import FromMM as mm, VECTOR2I
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PCB = os.path.join(HERE, "dji-fcc.kicad_pcb")
-W, H = 76.0, 34.0
+W, H = 80.0, 34.0
 INSET = 0.3
 
 
@@ -34,8 +34,8 @@ def add_pour(board, layer, net):
 def silk_labels(board):
     for t in [d for d in board.GetDrawings() if d.GetClass() == "PCB_TEXT"]:
         board.Remove(t)
-    for text, x, y, size in [("dji-fcc-esp32 rA", 14.0, 32.6, 0.9), ("J1 REMOTE", 5.5, 28.3, 0.8),
-                             ("J2 CHARGE", 58.0, 12.4, 0.8), ("+", 35.0, 33.2, 1.0), ("-", 37.0, 33.2, 1.0), ("BAT", 31.6, 33.2, 0.8)]:
+    for text, x, y, size in [("dji-fcc-esp32 rA", 14.0, 32.6, 0.9), ("J1 REMOTE", 4.0, 22.8, 0.8),
+                             ("J2 CHARGE", 64.5, 31.3, 0.8), ("+", 35.0, 33.2, 1.0), ("-", 37.0, 33.2, 1.0), ("BAT", 31.6, 33.2, 0.8)]:
         t = pcbnew.PCB_TEXT(board)
         t.SetText(text)
         t.SetLayer(pcbnew.F_SilkS)

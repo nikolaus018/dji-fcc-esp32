@@ -40,8 +40,8 @@ def C(ref, value, a, b, fp=C0603, **p):
 part("U1", "RF_Module:ESP32-S3-MINI-1", "RF_Module:ESP32-S2-MINI-1", "ESP32-S3-MINI-1-N8", {
     "GND": "GND", "3V3": "+3V3", "EN": "ESP_EN", "IO0": "IO0",
     "IO1": "J1_CC1", "IO2": "J1_CC2",
-    "IO4": "VBAT_SENSE", "IO38": "VCHG_SENSE",
-    "IO6": "BOOST_EN", "IO7": "LOAD_EN", "IO8": "LOAD_FAULT",
+    "IO4": "VBAT_SENSE", "IO21": "VCHG_SENSE",
+    "IO39": "CHRG", "IO38": "STDBY", "IO6": "BOOST_EN", "IO7": "LOAD_EN", "IO8": "LOAD_FAULT",
     "IO42": "LED_R", "IO41": "LED_G", "IO40": "LED_B",
     "USB_D-": "USB_DN", "USB_D+": "USB_DP",
     "TXD0": "UART_TX", "RXD0": "UART_RX",
@@ -65,6 +65,7 @@ C("C5", "10uF", "+3V3", "GND", fp=C0805)
 part("J2", "Connector:USB_C_Receptacle_USB2.0_16P",
      "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12", "USB-C CHARGE", {
          "VBUS": "VBUS_CHG", "GND": "GND", "SHIELD": "GND", "CC1": "J2_CC1", "CC2": "J2_CC2",
+         "D+": "USB2_DP_C", "D-": "USB2_DN_C",
      }, mpn="TYPE-C-31-M-12")
 R("R2", "5.1k", "J2_CC1", "GND")
 R("R3", "5.1k", "J2_CC2", "GND")
@@ -77,11 +78,6 @@ part("U3", "Battery_Management:TP4056-42-ESOP8", "Package_SO:SOIC-8-1EP_3.9x4.9m
      mpn="TP4056-42-ESOP8")
 R("R4", "4.7k", "PROG", "GND")  # 1200/4.7k = ~255 mA charge current
 C("C7", "10uF", "VBAT", "GND", fp=C0805)
-R("R5", "1k", "VBUS_CHG", "CHG_A")
-passive("D2", "Device:LED", LED0603, "RED", "CHRG", "CHG_A")      # K=1, A=2
-R("R6", "1k", "VBUS_CHG", "DONE_A")
-passive("D3", "Device:LED", LED0603, "GREEN", "STDBY", "DONE_A")
-
 part("J3", "Connector_Generic:Conn_01x02", "Connector_JST:JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal",
      "BATTERY 1S LiPo (+ on pin 1)", {"1": "VBAT", "2": "BNEG"}, mpn="S2B-PH-SM4-TB")
 part("U4", "Battery_Management:DW01A", SOT236, "DW01A",
@@ -125,7 +121,17 @@ R("R15", "33k", "J1_CC1", "+3V3")   # Rp to 3V3: 36k +/-20% = default USB power 
 R("R16", "33k", "J1_CC2", "+3V3")
 passive("D5", "Device:D_Zener", "Diode_SMD:D_SOD-123F", "SMF5.0A", "VBUS_REM", "GND", mpn="SMF5.0A")
 part("U7", "Power_Protection:USBLC6-2SC6", SOT236, "USBLC6-2SC6",
-     {"1": "USB_DP_C", "6": "USB_DP", "3": "USB_DN_C", "4": "USB_DN", "2": "GND", "5": "VBUS_REM"},
+     {"1": "USB_DP_C", "6": "USB_DP_J1", "3": "USB_DN_C", "4": "USB_DN_J1", "2": "GND", "5": "VBUS_REM"},
+     mpn="USBLC6-2SC6")
+
+# USB data path: the S3 has one USB PHY. J1 (remote) and J2 (computer, for flashing/updates) share it through a
+# 2:1 switch whose select input is "J2 has VBUS". Plugged into a computer = ESP talks to J2, otherwise to J1.
+part("U8", "Interface_USB:FSUSB42MUX", "Package_SO:MSOP-10_3x3mm_P0.5mm", "FSUSB42MUX",
+     {"VCC": "+3V3", "GND": "GND", "SEL": "VCHG_SENSE", "~{OE}": "GND", "D+": "USB_DP", "D-": "USB_DN",
+      "HSD1+": "USB_DP_J1", "HSD1-": "USB_DN_J1", "HSD2+": "USB2_DP", "HSD2-": "USB2_DN"}, mpn="FSUSB42MUX")
+C("C15", "100nF", "+3V3", "GND")
+part("U9", "Power_Protection:USBLC6-2SC6", SOT236, "USBLC6-2SC6",
+     {"1": "USB2_DP_C", "6": "USB2_DP", "3": "USB2_DN_C", "4": "USB2_DN", "2": "GND", "5": "VBUS_CHG"},
      mpn="USBLC6-2SC6")
 
 # ----------------------------------------------------------------------------------------------
@@ -160,8 +166,8 @@ PWR_FLAGS = ["GND", "VBUS_CHG", "VBOOST", "BNEG", "DW_VCC"]
 
 # LCSC / JLCPCB part numbers (looked up on jlcpcb.com/partdetail/<C#>; see docs/BOM notes)
 LCSC_REF = {"U1": "C2913206", "U2": "C51118", "U3": "C16581", "U4": "C2927799", "Q1": "C14212", "U5": "C84817",
-            "U6": "C55266", "U7": "C7519", "J1": "C165948", "J2": "C165948", "J3": "C295747", "L1": "C48427",
-            "D4": "C8678", "D1": "C707993", "D5": "C707993", "D2": "C2286", "D3": "C72043", "D6": "C2286",
+            "U6": "C55266", "U7": "C7519", "U8": "C11355", "U9": "C7519", "J1": "C165948", "J2": "C165948", "J3": "C295747", "L1": "C48427",
+            "D4": "C8678", "D1": "C707993", "D5": "C707993", "D6": "C2286",
             "D7": "C72043", "D8": "C72041"}
 LCSC_R = {"10k": "C25804", "1k": "C21190", "100k": "C25803", "4.7k": "C23162", "100": "C22775", "470": "C23179",
           "220k": "C22961", "5.1k": "C23186", "30k": "C22984", "33k": "C4216", "47k": "C25819", "1M": "C22935",

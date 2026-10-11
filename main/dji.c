@@ -116,8 +116,29 @@ static void usb_start(void)
 
 #if BOARD_HAS_POWER_MGMT
 // Battery powered PCB: one patch per plug-in, then back to deep sleep.
+// Charger / computer on J2: the USB data lines are switched to J2, so stay out of USB host mode (that would
+// take the PHY away from the built-in USB-Serial-JTAG that `idf.py flash` talks to), show charge status and
+// stay awake (deep sleep would also drop USB). Leave when the cable is pulled or after 30 minutes.
+static void charge_mode(void)
+{
+    ESP_LOGI(TAG, "J2 powered: charge / flash mode");
+    for (int s = 0; s < 30 * 60 && board_charger_present(); s++) {
+        switch (board_charge_state()) {
+        case 1: board_led(255, 0, 0); break;      // charging: red
+        case 2: board_led(0, 255, 0); break;      // full: green
+        default: board_led(0, 0, 40); break;      // powered, not charging (no battery / fault)
+        }
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+    board_led(0, 0, 0);
+    board_sleep();
+}
+
 static void run(void)
 {
+    if (board_charger_present()) {
+        charge_mode();
+    }
     int mv = board_battery_mv();
     ESP_LOGI(TAG, "battery %d mV", mv);
     if (mv < BOARD_LOW_BATTERY_MV) {

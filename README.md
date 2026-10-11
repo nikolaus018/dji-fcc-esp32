@@ -24,6 +24,10 @@ The patch must be repeated **every time** you power on the drone and remote.
 
 FCC power is only legal in the US; power cycle the drone and remote to return to CE.
 
+## Flashing the custom PCB
+Plug **J2** into your computer and run `idf.py -B build_custom ... -p <port> flash` (port is the ESP's built-in USB-Serial-JTAG). Details in
+[`hardware/README.md`](hardware/README.md#flashing-and-updates).
+
 ## Notes
 - The remote reports 512-byte bulk packets on a full-speed link. `components/espressif__usb` is a copy of
   Espressif's USB host component with the MPS check in `hcd_dwc.c` relaxed, and `main/dji.c` sizes the

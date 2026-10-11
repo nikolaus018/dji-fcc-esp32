@@ -16,7 +16,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 FP = os.path.expanduser("~/Applications/KiCad/KiCad.app/Contents/SharedSupport/footprints")
 PCB = os.path.join(HERE, "dji-fcc.kicad_pcb")
 
-W, H = 76.0, 34.0          # board size, mm
+W, H = 80.0, 34.0          # board size, mm
 RAD = 2.0                  # corner radius
 MX, MY = 38.0, 10.0        # ESP module origin (antenna end flush with the top edge)
 
@@ -26,7 +26,7 @@ PLACE = {
     # J1 (remote) on the left edge facing -X, J2 (charge) on the right edge facing +X
     "J1": (4.07, 17.0, 270), "J2": (W - 4.07, 17.0, 90),
     "H1": (W - 3.0, H - 3.0, 0), "H2": (3.0, H - 3.0, 0),
-    "FID1": (2.8, 2.8, 0), "FID2": (73.5, 8.0, 0), "FID3": (74.0, 25.0, 0),
+    "FID1": (2.8, 2.8, 0), "FID2": (77.5, 8.0, 0), "FID3": (78.0, 25.0, 0),
 }
 PLACE.update(json.load(open(os.path.join(HERE, "placement.json"))) if os.path.exists(os.path.join(HERE, "placement.json")) else {})
 
@@ -45,15 +45,15 @@ def write_project():
         }},
         "net_settings": {
             "classes": [
-                {"name": "Default", "clearance": 0.2, "track_width": 0.2, "via_diameter": 0.6, "via_drill": 0.3,
+                {"name": "Default", "clearance": 0.15, "track_width": 0.2, "via_diameter": 0.6, "via_drill": 0.3,
                  "diff_pair_width": 0.2, "diff_pair_gap": 0.25, "diff_pair_via_gap": 0.25, "microvia_diameter": 0.3,
                  "microvia_drill": 0.1, "priority": 2147483647, "pcb_color": "rgba(0, 0, 0, 0.000)",
                  "schematic_color": "rgba(0, 0, 0, 0.000)", "wire_width": 6, "bus_width": 12, "line_style": 0},
-                {"name": "Power", "clearance": 0.2, "track_width": 0.6, "via_diameter": 0.8, "via_drill": 0.4,
+                {"name": "Power", "clearance": 0.15, "track_width": 0.6, "via_diameter": 0.8, "via_drill": 0.4,
                  "diff_pair_width": 0.2, "diff_pair_gap": 0.25, "diff_pair_via_gap": 0.25, "microvia_diameter": 0.3,
                  "microvia_drill": 0.1, "priority": 0, "pcb_color": "rgba(0, 0, 0, 0.000)",
                  "schematic_color": "rgba(0, 0, 0, 0.000)", "wire_width": 6, "bus_width": 12, "line_style": 0},
-                {"name": "Mid", "clearance": 0.2, "track_width": 0.35, "via_diameter": 0.6, "via_drill": 0.3,
+                {"name": "Mid", "clearance": 0.15, "track_width": 0.35, "via_diameter": 0.6, "via_drill": 0.3,
                  "diff_pair_width": 0.2, "diff_pair_gap": 0.25, "diff_pair_via_gap": 0.25, "microvia_diameter": 0.3,
                  "microvia_drill": 0.1, "priority": 1, "pcb_color": "rgba(0, 0, 0, 0.000)",
                  "schematic_color": "rgba(0, 0, 0, 0.000)", "wire_width": 6, "bus_width": 12, "line_style": 0},
