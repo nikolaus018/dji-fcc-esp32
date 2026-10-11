@@ -10,3 +10,5 @@ hardware/fp-info-cache
 hardware/_autosave-*
 hardware/*.kicad_pcb-bak
 hardware/__pycache__/
+.DS_Store
+__pycache__/

@@ -14,7 +14,7 @@ from kiutils.symbol import SymbolLib
 import design
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SYMDIR = os.path.expanduser("~/Applications/KiCad/KiCad.app/Contents/SharedSupport/symbols")
+SYMDIR = os.path.join(os.environ.get("KICAD_APP", os.path.expanduser("~/Applications/KiCad/KiCad.app")), "Contents/SharedSupport/symbols")
 PROJECT = "dji-fcc"
 ROOT = str(uuid.uuid5(uuid.NAMESPACE_DNS, "dji-fcc-esp32-root"))
 _libs = {}

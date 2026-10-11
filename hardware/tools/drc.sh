@@ -1,10 +1,10 @@
 #!/bin/bash
 cd "$(dirname "$0")/.."
 source tools/env.sh
-$KCLI pcb drc --severity-all --format json --all-track-errors --units mm -o /private/tmp/claude-501/drc.json dji-fcc.kicad_pcb >/dev/null 2>&1 || true
+$KCLI pcb drc --severity-all --format json --all-track-errors --units mm -o "$WORK/drc.json" dji-fcc.kicad_pcb >/dev/null 2>&1 || true
 python3 - <<'PY'
-import json, collections
-d = json.load(open('/private/tmp/claude-501/drc.json'))
+import json, collections, os
+d = json.load(open(os.environ['WORK'] + '/drc.json'))
 c = collections.Counter()
 for sec in ('violations', 'unconnected_items', 'schematic_parity'):
     for v in d.get(sec, []):

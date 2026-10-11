@@ -1,5 +1,5 @@
 import sys, os, pcbnew
-FP = os.path.expanduser("~/Applications/KiCad/KiCad.app/Contents/SharedSupport/footprints")
+FP = os.path.join(os.environ.get("KICAD_APP", os.path.expanduser("~/Applications/KiCad/KiCad.app")), "Contents/SharedSupport/footprints")
 for arg in sys.argv[1:]:
     lib, name = arg.split(":")
     fp = pcbnew.FootprintLoad(f"{FP}/{lib}.pretty", name)

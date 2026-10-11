@@ -3,17 +3,17 @@
 set -e
 cd "$(dirname "$0")/.."
 source tools/env.sh
-export KICAD10_3DMODEL_DIR=$HOME/Applications/KiCad/KiCad.app/Contents/SharedSupport/3dmodels
+export KICAD10_3DMODEL_DIR=$KICAD_APP/Contents/SharedSupport/3dmodels
 mkdir -p fab/gerber docs
 rm -f fab/gerber/* fab/dji-fcc-gerbers.zip
 $KCLI pcb export gerbers --layers F.Cu,B.Cu,F.Paste,B.Paste,F.Mask,B.Mask,F.SilkS,B.SilkS,Edge.Cuts -o fab/gerber/ dji-fcc.kicad_pcb >/dev/null
 $KCLI pcb export drill --format excellon --drill-origin absolute --excellon-units mm --excellon-separate-th --generate-map --map-format gerberx2 -o fab/gerber/ dji-fcc.kicad_pcb >/dev/null
 (cd fab/gerber && zip -q ../dji-fcc-gerbers.zip *)
 # placement file in JLCPCB column layout
-$KCLI pcb export pos --format csv --units mm --side front -o /private/tmp/claude-501/pos.csv dji-fcc.kicad_pcb >/dev/null
+$KCLI pcb export pos --format csv --units mm --side front -o "$WORK/pos.csv" dji-fcc.kicad_pcb >/dev/null
 python3 - <<'PY'
-import csv
-rows = list(csv.DictReader(open('/private/tmp/claude-501/pos.csv')))
+import csv, os
+rows = list(csv.DictReader(open(os.environ['WORK'] + '/pos.csv')))
 with open('fab/cpl_jlcpcb.csv', 'w', newline='') as f:
     w = csv.writer(f)
     w.writerow(['Designator', 'Val', 'Package', 'Mid X', 'Mid Y', 'Rotation', 'Layer'])

@@ -1,7 +1,7 @@
 """Print pins of KiCad library symbols: libinfo.py Lib:Symbol [Lib:Symbol...]  |  libinfo.py --find pattern"""
 import sys, glob, os, re
 from kiutils.symbol import SymbolLib
-SYM = os.path.expanduser("~/Applications/KiCad/KiCad.app/Contents/SharedSupport/symbols")
+SYM = os.path.join(os.environ.get("KICAD_APP", os.path.expanduser("~/Applications/KiCad/KiCad.app")), "Contents/SharedSupport/symbols")
 if sys.argv[1] == "--find":
     pat = re.compile(sys.argv[2], re.I)
     for f in sorted(glob.glob(SYM + "/*.kicad_sym")):

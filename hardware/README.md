@@ -31,10 +31,11 @@ Behaviour (firmware `main/`, built with `CONFIG_DJI_BOARD_CUSTOM`):
 2. The remote's 5.1 kΩ Rd pulls a CC pin low on plug-in → ESP wakes (EXT1).
 3. Battery check (< 3.3 V → red blinks, sleep). Blue LED. Boost on, switch on → remote gets VBUS and enumerates.
 4. Patch is sent over the remote's CDC-ACM interface. Yellow while sending, **green = success, red = failure**.
-5. Port power off, wait for unplug, deep sleep. Repeat the plug-in after every power-on of the drone/remote.
+5. Port power off, deep sleep. Each plug-in is patched once: leaving the dongle in the remote does not keep it
+   awake or drain the battery; unplug and plug it in again after every power-on of the drone/remote.
 
 LED colours: blue = powering remote, yellow = sending, green = patched, red = error / low battery.
-While J2 is powered the same RGB LED shows charging (red) / full (green) / powered but not charging (dim blue).
+While J2 is powered the same RGB LED shows charging (red) / full (green) / powered but not charging (blue).
 
 ## Files
 
@@ -48,7 +49,8 @@ While J2 is powered the same RGB LED shows charging (red) / full (green) / power
 | `fab/` | `dji-fcc-gerbers.zip`, `bom_jlcpcb.csv`, `cpl_jlcpcb.csv`, `bom_full.csv`, `dji-fcc.step`, raw gerbers/drill. |
 | `docs/` | `schematic.pdf`, `pcb_top.pdf`, `pcb_bottom.pdf`, renders. |
 
-Regenerate everything (needs KiCad, `uv`, Java and Freerouting, see `tools/env.sh`):
+Regenerate everything (needs KiCad, `uv`, Java and Freerouting; paths are set in `tools/env.sh` and can be
+overridden with `KICAD_APP`, `JAVA`, `FREEROUTING`):
 
 ```bash
 cd hardware
@@ -91,13 +93,13 @@ a charge/update door; J1 is the one used every flight.
    JLCPCB's part library often needs per-part rotation offsets (`cpl_jlcpcb.csv` uses KiCad's rotation as-is).
 4. Hand-fit afterwards: battery (pre-wired JST-PH 2.0 pack, **polarity: + on pin 1, silkscreen shows + and -**).
    Many packs are wired the other way round; check with a meter before connecting.
-5. Flash through the pads (below), then run the bring-up list.
+5. Flash over J2 (below), then run the bring-up list.
 
 `fab/bom_full.csv` lists every line with MPN and LCSC number. Numbers were looked up on jlcpcb.com on 2026-10-11:
 every line resolved to a matching part except L1 (C48427 was only seen on LCSC's datasheet listing; confirm
 4.7 µH / ≥ 2 A saturation). **Stock and "basic vs extended" status change, re-check before ordering.**
-The DW01A pin order (OD, CS, OC, TD, VCC, GND) is the standard one but I could not open the vendor datasheet
-for C2927799; compare it with the datasheet before ordering.
+The DW01A pin order (OD, CS, OC, TD, VCC, GND) is the standard one, but the vendor datasheet for C2927799 was
+not checked; compare it with the datasheet before ordering.
 
 ## Flashing and updates
 
@@ -112,7 +114,10 @@ If the firmware is ever broken so badly that step 2 does not work, short the **I
 bootloader takes over USB. The UART pads (TX, RX, GND, 3V3, EN, IO0) remain as a last resort and for production jigs.
 Do not power the 3V3 pad while the battery is connected.
 
-Charge mode keeps the ESP awake while J2 is powered (about 30 mA from the battery side, far below the 255 mA charge current).
+On a computer the ESP stays awake for as long as the host talks to it, so the port does not disappear mid-flash.
+On a plain charger it sleeps and only wakes every 30 s for about 2 s to refresh the LED (which stays lit through
+the sleep). That matters: the awake ESP draws more than the TP4056's 25 mA end-of-charge threshold, so a board that
+stayed awake would never finish charging. For the same reason the LED may not reach green while J2 is on a computer.
 
 ## Design notes
 
@@ -139,16 +144,20 @@ This is a prototype-ready design, not a production release. Open items, roughly 
    - Charge port: 5 V in → RGB LED red while charging, green when full, TP4056 BAT ≈ 4.2 V at end of charge, 255 mA max.
    - **USB switch:** with J2 on a computer the ESP enumerates as 303A:1001 and flashes; with only J1 plugged into a remote it enumerates the remote.
      Check both directions, also with both cables attached (J2 wins).
-   - Protection: battery connected, measure VBAT at J3 vs. 3V3 pad; short-circuit test on a bench supply with current limit.
+   - Protection: a DW01A usually stays off after the battery is first connected until a charger is applied once;
+     plug J2 in before judging a "dead" board. Then, battery connected, measure VBAT at J3 vs. 3V3 pad; short-circuit test on a bench supply with current limit.
    - Boost: VBOOST = 5.0 V ± 3 % with 100 Ω load, ripple < 100 mV; `BOOST_EN` low → switch output < 0.1 V.
    - Switch: VBUS_REM = 0 V when idle, 5 V when enabled, trips at ≈ 0.5-0.6 A.
    - **J1 CC behaviour with a real remote:** confirm CC reads ≈ 0.44 V when plugged and the board wakes. If a remote variant
-     does not present Rd, the wake logic needs a fallback (timer wake + VBUS probe).
+     does not present Rd, the wake logic needs a fallback (timer wake + VBUS probe). Also check that unplugging wakes
+     the board once and that it then sleeps again (the firmware re-arms the wake-up for the opposite CC level).
+   - Sleep / charge: sleep current ≈ 85 µA with and without a remote left plugged in; on a wall charger the LED goes
+     red → green and the TP4056 terminates.
    - Full patch cycle on every drone/remote you care about (README of DJI-FCC-HACK lists tested ones).
 2. **Verify placement rotations** in the JLCPCB viewer and on the first assembled board.
 3. **Battery:** a protected 1S LiPo with PH-2.0 lead and the polarity you expect. Mechanical retention and a label on the case.
 4. **Compliance** (needed to sell it): FCC Part 15B / CE EMC for an unintentional radiator that contains a pre-certified module,
    UN38.3 transport test for the battery, RoHS paperwork. Also check the legal side of selling a product whose purpose is to switch
    a DJI remote to its FCC power profile.
-5. Firmware: add a long-press/second-wake path if you want field updates (currently UART pads only), consider a boot-time
-   brown-out margin test with a nearly empty cell.
+5. Firmware: measure the brown-out margin with a nearly empty cell (a brown-out reset is reported as low battery and
+   not retried until the next plug-in).

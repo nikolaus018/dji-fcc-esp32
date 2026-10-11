@@ -8,13 +8,16 @@
 void board_init(void);
 void board_led(uint8_t r, uint8_t g, uint8_t b);    // 0 = off, non-zero = on (brightness where supported)
 int board_battery_mv(void);                          // battery voltage in mV, -1 if the board cannot measure it
-bool board_wait_remote_attach(int timeout_ms);       // true once a USB-C sink (the remote) is seen on CC
+bool board_wait_remote_attach(int timeout_ms);       // true once a USB-C sink (the remote) is seen on CC (debounced)
 void board_remote_power(bool on);                    // 5 V to the remote's port (current limited on the PCB)
 bool board_remote_fault(void);                       // switch reports over-current / reverse voltage
-void board_wait_remote_detach(void);                 // returns once the remote has been unplugged
 bool board_charger_present(void);                    // J2 has VBUS (charger or computer); USB is routed to J2 then
 int board_charge_state(void);                        // 0 none, 1 charging, 2 charge complete
-void board_sleep(void) __attribute__((noreturn));    // deep sleep, wakes when a remote is plugged in
+bool board_usb_host_connected(void);                 // a computer is talking to the ESP's own USB port (J2)
+// Deep sleep until the remote is plugged in (or unplugged, if one is attached now) or J2 gets power.
+void board_sleep(void) __attribute__((noreturn));
+// Deep sleep with the LED left as it is; wakes after `seconds` or when J2 loses power.
+void board_charge_sleep(int seconds) __attribute__((noreturn));
 
 #define BOARD_HAS_POWER_MGMT CONFIG_DJI_BOARD_CUSTOM
 #define BOARD_LOW_BATTERY_MV 3300

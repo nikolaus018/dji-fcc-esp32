@@ -34,14 +34,18 @@ int board_battery_mv(void) { return -1; }
 bool board_wait_remote_attach(int timeout_ms) { (void)timeout_ms; return true; }
 void board_remote_power(bool on) { (void)on; }   // the dev board feeds VBUS through the USB-OTG jumper
 bool board_remote_fault(void) { return false; }
-void board_wait_remote_detach(void) {}
 bool board_charger_present(void) { return false; }
 int board_charge_state(void) { return 0; }
+bool board_usb_host_connected(void) { return false; }
 
-void board_sleep(void)
+static void halt(void) __attribute__((noreturn));
+static void halt(void)
 {
     for (;;) {
         vTaskDelay(portMAX_DELAY);
     }
 }
+
+void board_sleep(void) { halt(); }
+void board_charge_sleep(int seconds) { (void)seconds; halt(); }
 #endif

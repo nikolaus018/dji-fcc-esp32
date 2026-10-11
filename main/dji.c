@@ -2,9 +2,11 @@
 //
 // Dev board:  plug the USB-OTG port into the remote's bottom port; the patch is sent whenever a remote appears.
 // Custom PCB: powered from the battery, sleeps until a remote is plugged in, powers the remote's port,
-//             sends the patch, shows the result on the LED, then goes back to sleep.
+//             sends the patch, shows the result on the LED, then goes back to sleep until the next plug-in.
 #include <stdint.h>
+#include "esp_attr.h"
 #include "esp_log.h"
+#include "esp_system.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
@@ -115,38 +117,55 @@ static void usb_start(void)
 }
 
 #if BOARD_HAS_POWER_MGMT
-// Battery powered PCB: one patch per plug-in, then back to deep sleep.
+#define CHARGE_AWAKE_S 2      // time a computer gets to start talking to us after a wake-up
+#define CHARGE_SLEEP_S 30
+
+// Set once a plug-in has been dealt with, cleared when the remote is unplugged. Survives deep sleep, so a
+// remote that stays plugged in is patched once and does not keep the board awake.
+static RTC_DATA_ATTR bool handled;
+
 // Charger / computer on J2: the USB data lines are switched to J2, so stay out of USB host mode (that would
-// take the PHY away from the built-in USB-Serial-JTAG that `idf.py flash` talks to), show charge status and
-// stay awake (deep sleep would also drop USB). Leave when the cable is pulled or after 30 minutes.
+// take the PHY away from the built-in USB-Serial-JTAG that `idf.py flash` talks to) and show the charge status.
+// On a computer stay awake, deep sleep would drop USB. On a plain charger sleep between status updates: the
+// awake ESP draws more than the TP4056's end-of-charge current, so the charge would never terminate.
 static void charge_mode(void)
 {
     ESP_LOGI(TAG, "J2 powered: charge / flash mode");
-    for (int s = 0; s < 30 * 60 && board_charger_present(); s++) {
+    for (int s = 0; board_charger_present(); s++) {
         switch (board_charge_state()) {
         case 1: board_led(255, 0, 0); break;      // charging: red
         case 2: board_led(0, 255, 0); break;      // full: green
-        default: board_led(0, 0, 40); break;      // powered, not charging (no battery / fault)
+        default: board_led(0, 0, 255); break;     // powered, not charging (no battery / fault)
+        }
+        if (s >= CHARGE_AWAKE_S && !board_usb_host_connected()) {
+            board_charge_sleep(CHARGE_SLEEP_S);
         }
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
     board_led(0, 0, 0);
-    board_sleep();
 }
 
+// Battery powered PCB: one patch per plug-in, then back to deep sleep.
 static void run(void)
 {
     if (board_charger_present()) {
         charge_mode();
     }
-    int mv = board_battery_mv();
-    ESP_LOGI(TAG, "battery %d mV", mv);
-    if (mv < BOARD_LOW_BATTERY_MV) {
-        blink(255, 0, 0, 5);          // too low to power the remote's port: ask for a charge
+    if (!board_wait_remote_attach(1000)) {
+        handled = false;              // unplugged, or a spurious wake
         board_sleep();
     }
-    if (!board_wait_remote_attach(3000)) {
-        board_sleep();                // spurious wake
+    if (handled) {
+        board_sleep();                // still plugged in after the last attempt
+    }
+    handled = true;
+
+    int mv = board_battery_mv();
+    ESP_LOGI(TAG, "battery %d mV", mv);
+    // A brown-out reset means the last attempt collapsed the battery under the remote's load.
+    if (mv < BOARD_LOW_BATTERY_MV || esp_reset_reason() == ESP_RST_BROWNOUT) {
+        blink(255, 0, 0, 5);          // too low to power the remote's port: ask for a charge
+        board_sleep();
     }
 
     board_led(0, 0, 255);             // blue: remote seen, powering it
@@ -171,8 +190,6 @@ static void run(void)
     board_remote_power(false);
     board_led(ok ? 0 : 255, ok ? 255 : 0, 0);
     vTaskDelay(pdMS_TO_TICKS(ok ? 3000 : 4000));
-    board_led(0, 0, 0);
-    board_wait_remote_detach();           // otherwise the CC wake-up would fire again immediately
     board_sleep();
 }
 #else

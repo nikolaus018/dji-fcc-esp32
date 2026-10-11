@@ -13,7 +13,7 @@ from pcbnew import FromMM as mm, VECTOR2I
 import design
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-FP = os.path.expanduser("~/Applications/KiCad/KiCad.app/Contents/SharedSupport/footprints")
+FP = os.path.join(os.environ.get("KICAD_APP", os.path.expanduser("~/Applications/KiCad/KiCad.app")), "Contents/SharedSupport/footprints")
 PCB = os.path.join(HERE, "dji-fcc.kicad_pcb")
 
 W, H = 80.0, 34.0          # board size, mm

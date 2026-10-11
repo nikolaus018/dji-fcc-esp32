@@ -35,7 +35,7 @@ Plug **J2** into your computer and run `idf.py -B build_custom ... -p <port> fla
 - The CDC serial function is interface 2; interfaces 0/1 are DJI-proprietary.
 - The LED code drives GPIO48 and GPIO38 (DevKitC-1 v1.0 / v1.1).
 - `main/board.h` is the board abstraction (`board_devkit.c` / `board_custom.c`); `main/dji.c` holds the patch logic.
-- The dev-board build was tested on a real remote; the custom-PCB firmware and the hardware are untested (see `hardware/README.md`).
+- The dev-board build was tested on a real remote; the custom-PCB firmware compiles but, like the hardware itself, has never run on a real board (see `hardware/README.md`).
 
 ## License
 MIT for this project's own code (see `LICENSE`). `components/espressif__usb` is Apache-2.0 (Espressif), see its own `LICENSE`.
