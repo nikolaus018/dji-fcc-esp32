@@ -98,6 +98,8 @@ a charge/update door; J1 is the one used every flight.
 `fab/bom_full.csv` lists every line with MPN and LCSC number. Numbers were looked up on jlcpcb.com on 2026-10-11:
 every line resolved to a matching part except L1 (C48427 was only seen on LCSC's datasheet listing; confirm
 4.7 µH / ≥ 2 A saturation). **Stock and "basic vs extended" status change, re-check before ordering.**
+Q1 is ordered as HXY MOSFET 8205A (C5148694) because the Fortune FS8205A was out of stock; 8205A parts in TSSOP-8
+share one pinout (1/8 drain, 2/3 source 1, 4 gate 1, 5 gate 2, 6/7 source 2), but confirm it in the HXY datasheet.
 The DW01A pin order (OD, CS, OC, TD, VCC, GND) is the standard one, but the vendor datasheet for C2927799 was
 not checked; compare it with the datasheet before ordering.
 

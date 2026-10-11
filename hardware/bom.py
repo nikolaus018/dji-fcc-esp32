@@ -18,7 +18,9 @@ rows = collections.defaultdict(list)
 for ref, p in design.PARTS.items():
     if ref.startswith(("H", "FID", "TP")):
         continue
-    rows[(p["value"], p["fp"].split(":")[1], lcsc(ref, p), p["props"].get("mpn", ""))].append(ref)
+    # J1/J2 are the same part with different schematic values; JLCPCB wants one line per part number
+    value = "USB-C" if ref in ("J1", "J2") else p["value"]
+    rows[(value, p["fp"].split(":")[1], lcsc(ref, p), p["props"].get("mpn", ""))].append(ref)
 
 def key(r):
     return min(int(''.join(c for c in x if c.isdigit()) or 0) for x in r[1])

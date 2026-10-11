@@ -165,10 +165,13 @@ PWR_FLAGS = ["GND", "VBUS_CHG", "VBOOST", "BNEG", "DW_VCC"]
 
 
 # LCSC / JLCPCB part numbers (looked up on jlcpcb.com/partdetail/<C#>; see docs/BOM notes)
-LCSC_REF = {"U1": "C2913206", "U2": "C51118", "U3": "C16581", "U4": "C2927799", "Q1": "C14212", "U5": "C84817",
+# Substituted 2026-10-11 because the first choices were out of stock at JLCPCB:
+#   Q1: HXY MOSFET 8205A (TSSOP-8) instead of Fortune FS8205A (C14212)
+#   D7/D8: the same Everlight 19-217 LEDs on the /6T reel instead of /3T (C72043, C72041)
+LCSC_REF = {"U1": "C2913206", "U2": "C51118", "U3": "C16581", "U4": "C2927799", "Q1": "C5148694", "U5": "C84817",
             "U6": "C55266", "U7": "C7519", "U8": "C11355", "U9": "C7519", "J1": "C165948", "J2": "C165948", "J3": "C295747", "L1": "C48427",
             "D4": "C8678", "D1": "C707993", "D5": "C707993", "D6": "C2286",
-            "D7": "C72043", "D8": "C72041"}
+            "D7": "C2986059", "D8": "C2986058"}
 LCSC_R = {"10k": "C25804", "1k": "C21190", "100k": "C25803", "4.7k": "C23162", "100": "C22775", "470": "C23179",
           "220k": "C22961", "5.1k": "C23186", "30k": "C22984", "33k": "C4216", "47k": "C25819", "1M": "C22935",
           "150k": "C22807", "220": "C22962"}
