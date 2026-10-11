@@ -1,0 +1,4 @@
+(sym_lib_table
+	(version 7)
+	(lib (name "dji_parts")(type "KiCad")(uri "${KIPRJMOD}/lib/dji_parts.kicad_sym")(options "")(descr "dji-fcc custom symbols"))
+)

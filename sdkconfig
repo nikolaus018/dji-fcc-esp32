@@ -985,6 +985,15 @@ CONFIG_PARTITION_TABLE_MD5=y
 # end of Partition Table
 
 #
+# DJI FCC patch
+#
+# default:
+CONFIG_DJI_BOARD_DEVKIT=y
+# default:
+# CONFIG_DJI_BOARD_CUSTOM is not set
+# end of DJI FCC patch
+
+#
 # Compiler options
 #
 # default:

@@ -1,0 +1,10 @@
+menu "DJI FCC patch"
+    choice DJI_BOARD
+        prompt "Target board"
+        default DJI_BOARD_DEVKIT
+        config DJI_BOARD_DEVKIT
+            bool "ESP32-S3 dev board (e.g. DevKitC-1, USB-OTG jumper closed)"
+        config DJI_BOARD_CUSTOM
+            bool "dji-fcc-esp32 custom PCB (hardware/)"
+    endchoice
+endmenu
