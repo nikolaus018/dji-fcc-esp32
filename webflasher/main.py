@@ -2,7 +2,7 @@
 """Web flasher helper.
 
   python main.py build               merge ../build and ../build_custom into firmware/*.bin + manifests
-  python main.py [serve] [PORT]      serve this folder (default http://localhost:8000)
+  python main.py [serve] [PORT]      serve this folder (default http://localhost:3000)
 
 Build the firmware first (see the top-level README); variants whose build dir is missing are skipped.
 Web Serial only works on https:// or http://localhost, so host the folder on any
@@ -67,4 +67,4 @@ if __name__ == "__main__":
     else:
         if argv[:1] == ["serve"]:
             argv = argv[1:]
-        serve(int(argv[0]) if argv else 8000)
+        serve(int(argv[0]) if argv else 3000)
