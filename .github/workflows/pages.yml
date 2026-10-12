@@ -34,7 +34,7 @@ jobs:
           command: idf.py -B build_custom -DSDKCONFIG=sdkconfig.custom -DSDKCONFIG_DEFAULTS=sdkconfig.board_custom -DIDF_TARGET=esp32s3 build
       - name: Package the flasher
         run: python3 webflasher/main.py build
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: webflasher
 
