@@ -19,7 +19,7 @@ jobs:
     name: Build firmware and package the flasher
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - name: Dev board firmware
         uses: espressif/esp-idf-ci-action@v1
         with:
