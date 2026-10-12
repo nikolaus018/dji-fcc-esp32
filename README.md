@@ -1,4 +1,10 @@
-# dji
+# dji-fcc-esp32
+
+![ESP32-S3](https://img.shields.io/badge/ESP32--S3-ESP--IDF-red) ![License: MIT](https://img.shields.io/badge/license-MIT-green)
+
+A pocket dongle instead of a phone: plug it into a DJI N1 remote, it sends the FCC-mode patch over USB, shows the
+result on an LED and is done. Includes firmware (ESP-IDF, with a patched USB host stack) and a complete KiCad design
+for a battery-powered custom PCB.
 
 ESP32-S3 firmware that switches a DJI N1 remote to FCC mode over USB, replacing the Android app
 [DJI-FCC-HACK](https://github.com/M4TH1EU/DJI-FCC-HACK) (the two packets come from that project, credit to galbb on MavicPilots).
