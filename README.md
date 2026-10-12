@@ -1,13 +1,31 @@
-# dji-fcc-esp32
+<h1 align="center">dji-fcc-esp32</h1>
 
-![ESP32-S3](https://img.shields.io/badge/ESP32--S3-ESP--IDF-red) ![License: MIT](https://img.shields.io/badge/license-MIT-green)
+<p align="center">
+  <b>A pocket dongle that switches a DJI N1 remote to FCC mode, instead of a phone and an app.</b><br>
+  Plug it in, it patches over USB, shows the result on an LED and goes back to sleep.
+</p>
 
-A pocket dongle instead of a phone: plug it into a DJI N1 remote, it sends the FCC-mode patch over USB, shows the
-result on an LED and is done. Includes firmware (ESP-IDF, with a patched USB host stack) and a complete KiCad design
-for a battery-powered custom PCB.
+<p align="center">
+  <a href="https://github.com/nikolaus018/dji-fcc-esp32/actions/workflows/ci.yml"><img src="https://github.com/nikolaus018/dji-fcc-esp32/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/nikolaus018/dji-fcc-esp32" alt="MIT license"></a>
+  <img src="https://img.shields.io/badge/ESP32--S3-ESP--IDF-red" alt="ESP32-S3, ESP-IDF">
+  <img src="https://img.shields.io/badge/hardware-KiCad%20rev%20A-blue" alt="KiCad, rev A">
+</p>
 
-ESP32-S3 firmware that switches a DJI N1 remote to FCC mode over USB, replacing the Android app
-[DJI-FCC-HACK](https://github.com/M4TH1EU/DJI-FCC-HACK) (the two packets come from that project, credit to galbb on MavicPilots).
+<p align="center">
+  <img src="hardware/docs/hero.png" alt="Custom PCB, rev A, 80 x 34 mm" width="900">
+</p>
+
+## What is in here
+
+- **Firmware** (ESP-IDF): USB host stack for the remote's CDC-ACM interface, with Espressif's USB component patched to cope with the remote's
+  512-byte bulk packets on a full-speed link.
+- **Hardware** ([`hardware/`](hardware/README.md)): a complete KiCad design for a battery-powered dongle, generated from one Python source of truth:
+  schematic, autorouted 2-layer PCB, gerbers, JLCPCB BOM and placement, STEP model. 0 DRC errors.
+- **Web flasher** ([`webflasher/`](webflasher/)): flash either build from the browser over Web Serial.
+
+The two packets come from [DJI-FCC-HACK](https://github.com/M4TH1EU/DJI-FCC-HACK) (credit to galbb on MavicPilots);
+this project replaces its Android app.
 
 ## Two ways to run it
 
