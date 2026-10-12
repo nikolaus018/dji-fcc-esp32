@@ -22,7 +22,7 @@
   512-byte bulk packets on a full-speed link.
 - **Hardware** ([`hardware/`](hardware/README.md)): a complete KiCad design for a battery-powered dongle, generated from one Python source of truth:
   schematic, autorouted 2-layer PCB, gerbers, JLCPCB BOM and placement, STEP model. 0 DRC errors.
-- **Web flasher** ([`webflasher/`](webflasher/)): flash either build from the browser over Web Serial.
+- **Web flasher** ([live](https://nikolaus018.github.io/dji-fcc-esp32/), source in [`webflasher/`](webflasher/)): flash either build from Chrome or Edge over Web Serial. Built and deployed by CI on every push.
 
 The two packets come from [DJI-FCC-HACK](https://github.com/M4TH1EU/DJI-FCC-HACK) (credit to galbb on MavicPilots);
 this project replaces its Android app.

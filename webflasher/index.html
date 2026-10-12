@@ -4,39 +4,66 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>DJI FCC Patcher – Web Flasher</title>
+  <meta name="description" content="Flash the DJI N1 FCC patcher firmware onto an ESP32-S3 from your browser.">
   <script type="module" src="https://unpkg.com/esp-web-tools@10.0.1/dist/web/install-button.js?module"></script>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 36rem; margin: 3rem auto; padding: 0 1rem; line-height: 1.5; }
-    ol li { margin-bottom: .4rem; }
-    .note { color: #666; font-size: .9rem; }
+    :root {
+      --bg: #f6f7f9; --card: #fff; --text: #14181f; --muted: #5b6573; --line: #dfe3e8; --accent: #2563eb;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0e1116; --card: #161b22; --text: #e6e9ee; --muted: #9aa4b2; --line: #272e38; --accent: #6ea0ff; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    main { max-width: 40rem; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
+    h1 { font-size: 1.9rem; margin: 0 0 .25rem; letter-spacing: -.01em; }
+    .lead { color: var(--muted); margin: 0 0 1.5rem; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 1.25rem; margin-bottom: 1.25rem; }
+    .hero { width: 100%; height: auto; border-radius: 10px; display: block; margin-bottom: 1rem; }
+    label { display: block; font-weight: 600; margin-bottom: .4rem; }
+    select { width: 100%; padding: .6rem .7rem; font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 1rem; }
+    esp-web-install-button { --esp-tools-button-color: var(--accent); }
+    ol { padding-left: 1.2rem; margin: .5rem 0 0; }
+    li { margin-bottom: .4rem; }
+    h2 { font-size: 1.1rem; margin: 0 0 .25rem; }
+    .note { color: var(--muted); font-size: .9rem; }
+    a { color: var(--accent); }
   </style>
 </head>
 <body>
+<main>
   <h1>DJI FCC Patcher</h1>
-  <p>Flash the firmware that switches a DJI N1 remote to FCC mode onto an ESP32-S3, right from your browser.</p>
+  <p class="lead">Flash the firmware that switches a DJI N1 remote to FCC mode onto an ESP32-S3, right from your browser.
+    <a href="https://github.com/nikolaus018/dji-fcc-esp32">Source on GitHub</a>.</p>
 
-  <p><label>Board:
+  <div class="card">
+    <img class="hero" src="hero.png" alt="Custom PCB, rev A">
+    <label for="variant">Board</label>
     <select id="variant">
       <option value="devkit">ESP32-S3 dev board</option>
       <option value="custom">Custom PCB</option>
-    </select></label></p>
+    </select>
+    <esp-web-install-button id="installer" manifest="manifest-devkit.json">
+      <span slot="unsupported">Your browser has no Web Serial support. Use Chrome, Edge or Opera on a desktop.</span>
+      <span slot="not-allowed">Web Serial needs https:// or localhost.</span>
+    </esp-web-install-button>
+  </div>
 
-  <esp-web-install-button id="installer" manifest="manifest-devkit.json">
-    <span slot="unsupported">Your browser has no Web Serial support. Use Chrome, Edge or Opera on a desktop.</span>
-    <span slot="not-allowed">Web Serial needs https:// or localhost.</span>
-  </esp-web-install-button>
+  <div class="card">
+    <h2>Steps</h2>
+    <ol>
+      <li>Plug the board into your computer (dev board: the <b>COM</b> port; custom PCB: <b>J2</b>).</li>
+      <li>Click <b>Install</b> and pick the serial port.</li>
+      <li>If the port doesn't show up, hold <b>BOOT</b> while plugging in, then try again.</li>
+      <li>Afterwards follow the <a href="https://github.com/nikolaus018/dji-fcc-esp32#use-dev-board">usage steps</a> in the project README.</li>
+    </ol>
+  </div>
 
-  <h2>Steps</h2>
-  <ol>
-    <li>Plug the board into your computer (dev board: the <b>COM</b> port; custom PCB: <b>J2</b>).</li>
-    <li>Click <b>Install</b> and pick the serial port.</li>
-    <li>If the port doesn't show up, hold <b>BOOT</b> while plugging in, then try again.</li>
-    <li>Afterwards follow the usage steps in the project README.</li>
-  </ol>
   <p class="note">FCC power is only legal in the US. The patch must be repeated every time you power on the drone and remote.</p>
-  <script>
-    document.getElementById("variant").addEventListener("change", e =>
-      document.getElementById("installer").setAttribute("manifest", `manifest-${e.target.value}.json`));
-  </script>
+</main>
+<script>
+  document.getElementById("variant").addEventListener("change", e =>
+    document.getElementById("installer").setAttribute("manifest", `manifest-${e.target.value}.json`));
+</script>
 </body>
 </html>
