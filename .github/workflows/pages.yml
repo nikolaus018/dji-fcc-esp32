@@ -1,0 +1,50 @@
+name: Web flasher
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build firmware and package the flasher
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Dev board firmware
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: latest
+          target: esp32s3
+          command: idf.py build
+      - name: Custom PCB firmware
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: latest
+          target: esp32s3
+          command: idf.py -B build_custom -DSDKCONFIG=sdkconfig.custom -DSDKCONFIG_DEFAULTS=sdkconfig.board_custom -DIDF_TARGET=esp32s3 build
+      - name: Package the flasher
+        run: python3 webflasher/main.py build
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: webflasher
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
