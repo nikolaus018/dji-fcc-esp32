@@ -22,7 +22,7 @@ jobs:
           - board: custom PCB
             args: -B build_custom -DSDKCONFIG=sdkconfig.custom -DSDKCONFIG_DEFAULTS=sdkconfig.board_custom -DIDF_TARGET=esp32s3
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - name: Build with ESP-IDF
         uses: espressif/esp-idf-ci-action@v1
         with:
