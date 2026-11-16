@@ -1,20 +1,15 @@
-<h1 align="center">dji-fcc-esp32</h1>
+﻿# dji-fcc-esp32
 
-<p align="center">
-  <b>A pocket dongle that switches a DJI N1 remote to FCC mode, instead of a phone and an app.</b><br>
-  Plug it in, it patches over USB, shows the result on an LED and goes back to sleep.
-</p>
+[![CI](https://github.com/nikolaus018/dji-fcc-esp32/actions/workflows/ci.yml/badge.svg)](https://github.com/nikolaus018/dji-fcc-esp32/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/nikolaus018/dji-fcc-esp32)](LICENSE)
+![ESP32-S3](https://img.shields.io/badge/ESP32--S3-ESP--IDF-red)
+![Hardware](https://img.shields.io/badge/hardware-KiCad%20rev%20A-blue)
 
-<p align="center">
-  <a href="https://github.com/nikolaus018/dji-fcc-esp32/actions/workflows/ci.yml"><img src="https://github.com/nikolaus018/dji-fcc-esp32/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/nikolaus018/dji-fcc-esp32" alt="MIT license"></a>
-  <img src="https://img.shields.io/badge/ESP32--S3-ESP--IDF-red" alt="ESP32-S3, ESP-IDF">
-  <img src="https://img.shields.io/badge/hardware-KiCad%20rev%20A-blue" alt="KiCad, rev A">
-</p>
+ESP32-S3 USB host that switches a DJI N1 remote to FCC mode, replacing the usual
+phone app. The device sends the patch over USB, reports the result on an LED and
+returns to sleep.
 
-<p align="center">
-  <img src="hardware/docs/hero.png" alt="Custom PCB, rev A, 80 x 34 mm" width="900">
-</p>
+![Custom PCB, rev A, 80 x 34 mm](hardware/docs/hero.png)
 
 ## What is in here
 
@@ -41,7 +36,15 @@ this project replaces its Android app.
 2. Close the **USB-OTG** solder pad on the board bottom so it can power the remote's port.
 3. Power on the drone and remote, wait until connected. The phone must **not** be connected to the remote while patching.
 4. Plug the board's **USB** port into the remote's **bottom** port.
-5. LED: blue = waiting, yellow = sending, green = sent, red = error.
+5. Read the LED:
+
+   | Colour | State |
+   |---|---|
+   | Blue | Waiting for the remote |
+   | Yellow | Sending the patch |
+   | Green | Patch sent |
+   | Red | Error |
+
 6. Unplug the board and connect your phone to the **top** port.
 
 The patch must be repeated **every time** you power on the drone and remote.
